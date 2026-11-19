@@ -8,6 +8,7 @@ Use Node.js 24 and npm. From the project root, run:
 
 ```sh
 npm ci
+npm run seed
 npm run dev
 ```
 
@@ -15,6 +16,8 @@ Open `http://127.0.0.1:5173`. The page checks the Nest API at `/api/health` thro
 
 Run `npm run build` to compile the API and build the React client.
 
+`npm run seed` adds the eight movies and their prerequisite links from the assessment, plus four sample cinemas with the example bundle sizes. Rerunning it skips existing movies and cinemas by name and preserves their edits. The assessment supplies the dependency links and bundle sizes. The release year and runtime for Avengers: Doomsday are demo values.
+
 ## AI assistance
 
-Codex helped plan the project and scaffold and verify the NestJS, Vite, and SQLite setup.
+Codex helped plan the project, scaffold the app, and write and verify the SQLite schema and sample seed.

@@ -2,6 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { schema } from './schema';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
@@ -10,7 +11,10 @@ export class DatabaseService implements OnModuleDestroy {
   constructor() {
     const dataDirectory = resolve('data');
     mkdirSync(dataDirectory, { recursive: true });
-    this.connection = new DatabaseSync(join(dataDirectory, 'doomsday.sqlite'));
+    this.connection = new DatabaseSync(join(dataDirectory, 'doomsday.sqlite'), {
+      enableForeignKeyConstraints: true,
+    });
+    this.connection.exec(schema);
   }
 
   onModuleDestroy() {

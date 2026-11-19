@@ -8,6 +8,7 @@
     "dev:api": "node --watch --require ts-node/register server/main.ts",
     "dev:web": "vite",
     "build": "tsc && vite build",
+    "seed": "node --require ts-node/register server/seed.ts",
     "start:api": "node dist/server/main.js"
   },
   "dependencies": {
