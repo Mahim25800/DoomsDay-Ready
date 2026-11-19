@@ -2,6 +2,12 @@ import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch,
 import { parseMovieInput } from './movie-input';
 import { MoviesService } from './movies.service';
 
+function validateMovieId(id: number) {
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new BadRequestException('Movie ID must be a positive integer.');
+  }
+}
+
 @Controller('movies')
 export class MoviesController {
   constructor(private readonly movies: MoviesService) {}
@@ -9,6 +15,12 @@ export class MoviesController {
   @Get()
   list() {
     return this.movies.list();
+  }
+
+  @Get(':id/rewatch-order')
+  rewatchOrder(@Param('id', ParseIntPipe) id: number) {
+    validateMovieId(id);
+    return this.movies.rewatchOrder(id);
   }
 
   @Post()
@@ -23,10 +35,7 @@ export class MoviesController {
 
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() body: unknown) {
-    if (!Number.isSafeInteger(id) || id <= 0) {
-      throw new BadRequestException('Movie ID must be a positive integer.');
-    }
-
+    validateMovieId(id);
     return this.movies.update(id, parseMovieInput(body));
   }
 }

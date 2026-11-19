@@ -36,6 +36,8 @@ New movies default to unwatched with no prerequisites. A PATCH body can include 
 
 A direct or indirect prerequisite cycle returns HTTP 409 with code `CIRCULAR_DEPENDENCY`. The transaction rolls back the entire write.
 
+`GET /api/movies/:id/rewatch-order` returns `movies` in prerequisite order, plus `watchedCount` and `remainingRuntimeMinutes`. Each prerequisite appears once. The selected movie is excluded from the list and both totals.
+
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, and prerequisite cycle detection.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, and rewatch ordering.

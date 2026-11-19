@@ -32,6 +32,40 @@ export class MoviesService {
     return rows.map(toMovie);
   }
 
+  rewatchOrder(targetId: number) {
+    const movies = new Map(this.list().map(movie => [movie.id, movie]));
+    const target = movies.get(targetId);
+    if (!target) throw new NotFoundException('Movie not found.');
+
+    const ordered: (typeof target)[] = [];
+    const visited = new Set<number>();
+    const stack = [{ movie: target, expanded: false }];
+    let watchedCount = 0;
+    let remainingRuntimeMinutes = 0;
+
+    for (let step = stack.pop(); step; step = stack.pop()) {
+      const { movie, expanded } = step;
+      if (expanded) {
+        if (movie.id === targetId) continue;
+        ordered.push(movie);
+        if (movie.watched) watchedCount++;
+        else remainingRuntimeMinutes += movie.runtimeMinutes;
+        continue;
+      }
+
+      if (visited.has(movie.id)) continue;
+      visited.add(movie.id);
+      // Put the movie back first so its prerequisites are processed before it.
+      stack.push({ movie, expanded: true });
+      for (const prerequisiteId of movie.prerequisiteIds) {
+        const prerequisite = movies.get(prerequisiteId);
+        if (prerequisite) stack.push({ movie: prerequisite, expanded: false });
+      }
+    }
+
+    return { movies: ordered, watchedCount, remainingRuntimeMinutes };
+  }
+
   create(movie: MovieInput) {
     return this.transaction(() => {
       const db = this.database.connection;
