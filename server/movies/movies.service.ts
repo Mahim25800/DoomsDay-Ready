@@ -70,11 +70,11 @@ export class MoviesService {
 
   private replacePrerequisites(id: number, prerequisiteIds: number[]) {
     const db = this.database.connection;
-    if (prerequisiteIds.includes(id)) {
+    if (this.createsCycle(id, prerequisiteIds)) {
       throw new ConflictException({
         statusCode: 409,
         code: 'CIRCULAR_DEPENDENCY',
-        message: 'A movie cannot require itself.',
+        message: 'A movie cannot require itself directly or indirectly.',
       });
     }
 
@@ -88,6 +88,29 @@ export class MoviesService {
     db.prepare('DELETE FROM movie_prerequisites WHERE movie_id = ?').run(id);
     const insert = db.prepare('INSERT INTO movie_prerequisites (movie_id, prerequisite_id) VALUES (?, ?)');
     for (const prerequisiteId of prerequisiteIds) insert.run(id, prerequisiteId);
+  }
+
+  private createsCycle(movieId: number, prerequisiteIds: number[]): boolean {
+    const findPrerequisites = this.database.connection.prepare(
+      'SELECT prerequisite_id AS id FROM movie_prerequisites WHERE movie_id = ?',
+    );
+    const pending = [...prerequisiteIds];
+    const visited = new Set(pending);
+
+    // A new link closes a cycle if its prerequisite already leads back to this movie.
+    for (let index = 0; index < pending.length; index++) {
+      const id = pending[index];
+      if (id === movieId) return true;
+
+      const prerequisites = findPrerequisites.all(id) as { id: number }[];
+      for (const prerequisite of prerequisites) {
+        if (visited.has(prerequisite.id)) continue;
+        visited.add(prerequisite.id);
+        pending.push(prerequisite.id);
+      }
+    }
+
+    return false;
   }
 
   private transaction<T>(work: () => T): T {

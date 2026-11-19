@@ -34,6 +34,8 @@ Use `POST /api/movies` to create a movie, `GET /api/movies` to list movies, and 
 
 New movies default to unwatched with no prerequisites. A PATCH body can include only the fields to change. Sending `prerequisiteIds` replaces the full list, and sending an empty array clears it.
 
+A direct or indirect prerequisite cycle returns HTTP 409 with code `CIRCULAR_DEPENDENCY`. The transaction rolls back the entire write.
+
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, and movie create, list, and update endpoints.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, and prerequisite cycle detection.
