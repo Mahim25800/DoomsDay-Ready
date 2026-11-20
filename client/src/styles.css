@@ -52,7 +52,7 @@ a { color: var(--accent); }
   text-underline-offset: .35em;
 }
 
-.movies-page { padding-block: clamp(2rem, 5vw, 4rem); }
+.app-page { padding-block: clamp(2rem, 5vw, 4rem); }
 .page-heading { margin-bottom: 2rem; }
 .page-heading h1 {
   font: 400 clamp(3rem, 6vw, 5rem) / 1 var(--display);
@@ -88,19 +88,19 @@ a { color: var(--accent); }
 .prerequisite-summary strong { margin-right: .35rem; }
 .watched { flex: none; font-size: .875rem; }
 
-.add-panel {
+.add-panel, .booking-panel {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: .45rem;
   padding: 1.25rem;
   scroll-margin-top: 1rem;
 }
-.add-panel h2 { margin-bottom: 1rem; }
+.add-panel h2, .booking-panel h2 { margin-bottom: 1rem; }
 .form-fields, .picker { border: 0; padding: 0; margin: 0; min-width: 0; }
 .form-fields { display: grid; gap: .85rem; }
 .number-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .form-fields label, summary, .picker legend { font-size: .9rem; }
-.form-fields input:not([type=checkbox]) {
+.form-fields :is(input:not([type=checkbox]), select) {
   display: block;
   width: 100%;
   min-width: 0;
@@ -185,7 +185,25 @@ button:disabled { opacity: .65; cursor: wait; }
 .rewatch-title { overflow-wrap: anywhere; }
 .rewatch-watched { color: var(--accent); font-size: .875rem; font-weight: 600; }
 
+.booking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 28rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+.booking-panel h2 { font: 400 1.55rem / 1.2 var(--display); }
+.quote-total { font-weight: 650; color: var(--accent); }
+.quote-bundles { list-style: none; padding: 0; margin: .8rem 0 0; }
+.quote-bundles li {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  padding-top: .55rem;
+  margin-top: .55rem;
+  border-top: 1px solid var(--line);
+}
+
 @media (max-width: 700px) {
-  .movie-layout { grid-template-columns: 1fr; }
+  .movie-layout, .booking-layout { grid-template-columns: 1fr; }
   .jump-link { display: inline-block; margin-top: .6rem; }
 }

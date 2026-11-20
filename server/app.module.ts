@@ -1,4 +1,6 @@
 import { Controller, Get, Module, ServiceUnavailableException } from '@nestjs/common';
+import { CinemasController } from './cinemas/cinemas.controller';
+import { CinemasService } from './cinemas/cinemas.service';
 import { DatabaseService } from './database.service';
 import { MoviesController } from './movies/movies.controller';
 import { MoviesService } from './movies/movies.service';
@@ -20,7 +22,7 @@ class HealthController {
 }
 
 @Module({
-  controllers: [HealthController, MoviesController],
-  providers: [DatabaseService, MoviesService],
+  controllers: [HealthController, MoviesController, CinemasController],
+  providers: [DatabaseService, MoviesService, CinemasService],
 })
 export class AppModule {}

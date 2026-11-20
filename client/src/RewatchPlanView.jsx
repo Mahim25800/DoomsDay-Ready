@@ -73,7 +73,7 @@ export function RewatchPlanView() {
   }, [targetId, planAttempt]);
 
   return (
-    <main className="page-width movies-page">
+    <main className="page-width app-page">
       <div className="page-heading">
         <h1>Rewatch Plan</h1>
         <p>See what to watch before your selected movie.</p>
