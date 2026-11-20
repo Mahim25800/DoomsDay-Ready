@@ -196,7 +196,7 @@ export function MoviesView() {
   }
 
   return (
-    <main className="page-width movies-page">
+    <main className="page-width app-page">
       <div className="page-heading">
         <h1>Movies</h1>
         <p>Build your library and choose what to watch first.</p>

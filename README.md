@@ -14,6 +14,8 @@ npm run dev
 
 Open `http://127.0.0.1:5173` to manage your movie library. Open **Rewatch Plan** and select **Avengers: Doomsday** to see its watch order, progress, and remaining time. Vite proxies `/api` to Nest on port 3000. The API creates the local database at `data/doomsday.sqlite`.
 
+In **Booking**, select **Sample Cinema A** and enter a group size of **6** to get two 3-seat bundles. Select **Sample Cinema D** and enter **7** to see the result when an exact quote is impossible.
+
 Run `npm run build` to compile the API and build the React client.
 
 `npm run seed` adds the eight movies and their prerequisite links from the assessment, plus four sample cinemas with the example bundle sizes. Rerunning it skips existing movies and cinemas by name and preserves their edits. The assessment supplies the dependency links and bundle sizes. The release year and runtime for Avengers: Doomsday are demo values.
@@ -53,4 +55,4 @@ Use `POST /api/cinemas` to create a cinema and `GET /api/cinemas` to list cinema
 
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, Movies and Rewatch Plan views, cinema endpoints, and booking quote logic.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, cinema endpoints, booking quote logic, and all three React views.
