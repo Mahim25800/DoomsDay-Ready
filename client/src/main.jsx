@@ -1,34 +1,32 @@
 import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MoviesView } from './MoviesView';
+import { RewatchPlanView } from './RewatchPlanView';
+import './styles.css';
 
 function App() {
-  const [status, setStatus] = useState('Checking the API and database…');
+  const [hash, setHash] = useState(window.location.hash);
+  const showRewatch = hash === '#rewatch';
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    async function checkConnection() {
-      try {
-        const response = await fetch('/api/health', { signal: controller.signal });
-        if (!response.ok) throw new Error('Health check failed');
-        const health = await response.json();
-        setStatus(health.status === 'ok' && health.database === 'sqlite'
-          ? 'API and SQLite connected.'
-          : 'Unexpected response from the API.');
-      } catch {
-        if (!controller.signal.aborted) setStatus('Could not reach the API or database.');
-      }
-    }
-
-    void checkConnection();
-    return () => controller.abort();
+    const syncHash = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
   }, []);
 
   return (
-    <main>
-      <h1>Doomsday Ready</h1>
-      <p role="status">{status}</p>
-    </main>
+    <>
+      <header className="masthead">
+        <div className="page-width masthead-content">
+          <span>Doomsday Ready</span>
+          <nav aria-label="Main navigation">
+            <a href="#movies" aria-current={showRewatch ? undefined : 'page'}>Movies</a>
+            <a href="#rewatch" aria-current={showRewatch ? 'page' : undefined}>Rewatch Plan</a>
+          </nav>
+        </div>
+      </header>
+      {showRewatch ? <RewatchPlanView /> : <MoviesView />}
+    </>
   );
 }
 
