@@ -1,0 +1,84 @@
+name: Docker Compose smoke test
+
+on:
+  push:
+    branches:
+      - feature/docker-compose
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Validate, build, and start Compose
+        run: |
+          docker compose config --quiet
+          docker compose up --build --wait --wait-timeout 90
+
+      - name: Check the app and save a SQLite change
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+
+          const base = 'http://127.0.0.1:3000';
+          async function request(path, options) {
+            const response = await fetch(base + path, options);
+            assert.ok(response.ok, `${path} returned HTTP ${response.status}`);
+            return response;
+          }
+
+          const html = await (await request('/')).text();
+          assert.match(html, /<title>Doomsday Ready<\/title>/);
+          const asset = html.match(/<script[^>]+src="(\/assets\/[^"]+)"/)?.[1];
+          assert.ok(asset, 'The React entry asset is missing');
+          await request(asset);
+          assert.deepEqual(await (await request('/api/health')).json(), { status: 'ok', database: 'sqlite' });
+
+          const movies = await (await request('/api/movies')).json();
+          assert.equal(movies.length, 8);
+          const ironMan = movies.find(movie => movie.title === 'Iron Man');
+          assert.equal(ironMan?.watched, false);
+          const cinemas = await (await request('/api/cinemas')).json();
+          assert.equal(cinemas.length, 4);
+          const cinema = cinemas.find(cinema => cinema.name === 'Sample Cinema A');
+          assert.ok(cinema, 'Sample Cinema A is missing');
+          const quote = await (await request(`/api/cinemas/${cinema.id}/booking?groupSize=6`)).json();
+          assert.deepEqual(quote, { possible: true, bundleCount: 2, bundles: [{ size: 3, quantity: 2 }] });
+
+          const updated = await (await request(`/api/movies/${ironMan.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ watched: true }),
+          })).json();
+          assert.equal(updated.watched, true);
+          NODE
+
+      - name: Recreate the container and verify SQLite persistence
+        run: |
+          docker compose down
+          docker compose up --no-build --wait --wait-timeout 90
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+
+          const response = await fetch('http://127.0.0.1:3000/api/movies');
+          assert.ok(response.ok, `Movie list returned HTTP ${response.status}`);
+          const movies = await response.json();
+          assert.equal(movies.length, 8, 'Restarting should not duplicate sample movies');
+          assert.equal(movies.find(movie => movie.title === 'Iron Man')?.watched, true,
+            'The saved watched status must survive container recreation');
+          NODE
+
+      - name: Show Compose logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Clean up test containers and volumes
+        if: always()
+        run: docker compose down --volumes
