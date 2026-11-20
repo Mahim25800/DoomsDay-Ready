@@ -12,7 +12,7 @@ npm run seed
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173` to view the movie library, add a movie, edit prerequisites, or toggle watched status. Vite proxies `/api` to Nest on port 3000. The API creates the local database at `data/doomsday.sqlite`.
+Open `http://127.0.0.1:5173` to manage your movie library. Open **Rewatch Plan** and select **Avengers: Doomsday** to see its watch order, progress, and remaining time. Vite proxies `/api` to Nest on port 3000. The API creates the local database at `data/doomsday.sqlite`.
 
 Run `npm run build` to compile the API and build the React client.
 
@@ -40,4 +40,4 @@ A direct or indirect prerequisite cycle returns HTTP 409 with code `CIRCULAR_DEP
 
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, and Movies view.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, and Movies and Rewatch Plan views.
