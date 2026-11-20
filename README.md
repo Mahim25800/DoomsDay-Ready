@@ -49,6 +49,8 @@ Use `POST /api/cinemas` to create a cinema and `GET /api/cinemas` to list cinema
 }
 ```
 
+`GET /api/cinemas/:id/booking?groupSize=6` finds the fewest bundles that seat exactly the requested group, from 1 to 10,000 people. For bundle sizes `[1, 3, 4]` and six people, it returns `{"possible":true,"bundleCount":2,"bundles":[{"size":3,"quantity":2}]}`. If no exact combination exists, the response is `{"possible":false}`. When several combinations use the same minimum number of bundles, the API returns one of them.
+
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, Movies and Rewatch Plan views, and cinema create and list endpoints.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, Movies and Rewatch Plan views, cinema endpoints, and booking quote logic.

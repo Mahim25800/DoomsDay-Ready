@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { CinemasService } from './cinemas.service';
 
 @Controller('cinemas')
@@ -8,6 +8,22 @@ export class CinemasController {
   @Get()
   list() {
     return this.cinemas.list();
+  }
+
+  @Get(':id/booking')
+  bookingQuote(@Param('id', ParseIntPipe) id: number, @Query('groupSize') groupSize: unknown) {
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      throw new BadRequestException('Cinema ID must be a positive integer.');
+    }
+    if (typeof groupSize !== 'string' || !/^\d+$/.test(groupSize)) {
+      throw new BadRequestException('Group size must be an integer from 1 to 10000.');
+    }
+    const seats = Number(groupSize);
+    if (seats < 1 || seats > 10_000) {
+      throw new BadRequestException('Group size must be an integer from 1 to 10000.');
+    }
+
+    return this.cinemas.bookingQuote(id, seats);
   }
 
   @Post()
