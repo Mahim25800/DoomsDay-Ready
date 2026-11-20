@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database.service';
 import type { MovieInput } from './movie-input';
+import { buildRewatchPlan, createsPrerequisiteCycle } from './movie-planning';
 
 type MovieRow = Omit<MovieInput, 'watched' | 'prerequisiteIds'> & {
   id: number;
@@ -36,34 +37,7 @@ export class MoviesService {
     const movies = new Map(this.list().map(movie => [movie.id, movie]));
     const target = movies.get(targetId);
     if (!target) throw new NotFoundException('Movie not found.');
-
-    const ordered: (typeof target)[] = [];
-    const visited = new Set<number>();
-    const stack = [{ movie: target, expanded: false }];
-    let watchedCount = 0;
-    let remainingRuntimeMinutes = 0;
-
-    for (let step = stack.pop(); step; step = stack.pop()) {
-      const { movie, expanded } = step;
-      if (expanded) {
-        if (movie.id === targetId) continue;
-        ordered.push(movie);
-        if (movie.watched) watchedCount++;
-        else remainingRuntimeMinutes += movie.runtimeMinutes;
-        continue;
-      }
-
-      if (visited.has(movie.id)) continue;
-      visited.add(movie.id);
-      // Put the movie back first so its prerequisites are processed before it.
-      stack.push({ movie, expanded: true });
-      for (const prerequisiteId of movie.prerequisiteIds) {
-        const prerequisite = movies.get(prerequisiteId);
-        if (prerequisite) stack.push({ movie: prerequisite, expanded: false });
-      }
-    }
-
-    return { movies: ordered, watchedCount, remainingRuntimeMinutes };
+    return buildRewatchPlan(target, movies);
   }
 
   create(movie: MovieInput) {
@@ -104,7 +78,13 @@ export class MoviesService {
 
   private replacePrerequisites(id: number, prerequisiteIds: number[]) {
     const db = this.database.connection;
-    if (this.createsCycle(id, prerequisiteIds)) {
+    const findPrerequisites = db.prepare(
+      'SELECT prerequisite_id AS id FROM movie_prerequisites WHERE movie_id = ?',
+    );
+    const prerequisitesOf = (movieId: number) =>
+      findPrerequisites.all(movieId).map(row => Number(row.id));
+
+    if (createsPrerequisiteCycle(id, prerequisiteIds, prerequisitesOf)) {
       throw new ConflictException({
         statusCode: 409,
         code: 'CIRCULAR_DEPENDENCY',
@@ -122,29 +102,6 @@ export class MoviesService {
     db.prepare('DELETE FROM movie_prerequisites WHERE movie_id = ?').run(id);
     const insert = db.prepare('INSERT INTO movie_prerequisites (movie_id, prerequisite_id) VALUES (?, ?)');
     for (const prerequisiteId of prerequisiteIds) insert.run(id, prerequisiteId);
-  }
-
-  private createsCycle(movieId: number, prerequisiteIds: number[]): boolean {
-    const findPrerequisites = this.database.connection.prepare(
-      'SELECT prerequisite_id AS id FROM movie_prerequisites WHERE movie_id = ?',
-    );
-    const pending = [...prerequisiteIds];
-    const visited = new Set(pending);
-
-    // A new link closes a cycle if its prerequisite already leads back to this movie.
-    for (let index = 0; index < pending.length; index++) {
-      const id = pending[index];
-      if (id === movieId) return true;
-
-      const prerequisites = findPrerequisites.all(id) as { id: number }[];
-      for (const prerequisite of prerequisites) {
-        if (visited.has(prerequisite.id)) continue;
-        visited.add(prerequisite.id);
-        pending.push(prerequisite.id);
-      }
-    }
-
-    return false;
   }
 
   private transaction<T>(work: () => T): T {
