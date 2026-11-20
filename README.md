@@ -38,6 +38,17 @@ A direct or indirect prerequisite cycle returns HTTP 409 with code `CIRCULAR_DEP
 
 `GET /api/movies/:id/rewatch-order` returns `movies` in prerequisite order, plus `watchedCount` and `remainingRuntimeMinutes`. Each prerequisite appears once. The selected movie is excluded from the list and both totals.
 
+## Cinemas API
+
+Use `POST /api/cinemas` to create a cinema and `GET /api/cinemas` to list cinemas. A cinema needs a unique name and 1–10 distinct integer bundle sizes from 1 to 500. Responses list bundle sizes in ascending order.
+
+```json
+{
+  "name": "Example Cinema",
+  "bundleSizes": [1, 3, 4]
+}
+```
+
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, and Movies and Rewatch Plan views.
+Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, Movies and Rewatch Plan views, and cinema create and list endpoints.
