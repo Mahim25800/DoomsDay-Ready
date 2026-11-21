@@ -20,6 +20,47 @@ Run `npm run build` to compile the API and build the React client.
 
 `npm run seed` adds the eight movies and their prerequisite links from the assessment, plus four sample cinemas with the example bundle sizes. Rerunning it skips existing movies and cinemas by name and preserves their edits. The assessment supplies the dependency links and bundle sizes. The release year and runtime for Avengers: Doomsday are demo values.
 
+## Run with Docker Compose
+
+With Docker running and the Compose plugin available, run from the project root:
+
+```sh
+docker compose up --build
+```
+
+Open `http://127.0.0.1:3000`. The container serves both the React app and the API on port 3000 and seeds the sample movies and cinemas at startup. SQLite data stays in the named `doomsday-data` volume when you stop the app with `docker compose down`.
+
+## Data model
+
+```mermaid
+erDiagram
+    movies ||--o{ movie_prerequisites : "has prerequisite links"
+    movies ||--o{ movie_prerequisites : "appears as a prerequisite"
+    cinemas ||--o{ cinema_bundle_sizes : "offers"
+
+    movies {
+        integer id PK
+        text title UK
+        integer release_year
+        integer runtime_minutes
+        integer watched
+    }
+    movie_prerequisites {
+        integer movie_id PK, FK
+        integer prerequisite_id PK, FK
+    }
+    cinemas {
+        integer id PK
+        text name UK
+    }
+    cinema_bundle_sizes {
+        integer cinema_id PK, FK
+        integer size PK
+    }
+```
+
+Each prerequisite link connects a movie to another movie that must be watched first. Each bundle-size row records one seat count offered by a cinema.
+
 ## Movies API
 
 Use `POST /api/movies` to create a movie, `GET /api/movies` to list movies, and `PATCH /api/movies/:id` to update fields. A create request requires `title`, `releaseYear`, and `runtimeMinutes`.
@@ -53,6 +94,12 @@ Use `POST /api/cinemas` to create a cinema and `GET /api/cinemas` to list cinema
 
 `GET /api/cinemas/:id/booking?groupSize=6` finds the fewest bundles that seat exactly the requested group, from 1 to 10,000 people. For bundle sizes `[1, 3, 4]` and six people, it returns `{"possible":true,"bundleCount":2,"bundles":[{"size":3,"quantity":2}]}`. If no exact combination exists, the response is `{"possible":false}`. When several combinations use the same minimum number of bundles, the API returns one of them.
 
+## How the algorithms work
+
+- **Cycle check.** Follow the proposed prerequisites. If any path reaches the movie being edited, reject the change. A visited set keeps each movie from being checked twice.
+- **Rewatch order.** Visit each prerequisite before adding the movie that needs it to the list. Leave out the target, count watched movies, and add the runtimes of the unwatched movies.
+- **Booking quote.** For each seat total, save the fewest bundles and the last bundle size used. Start at zero seats with zero bundles. To fill a larger total, try adding each available size to a smaller total. Follow the saved sizes backward to build the quote.
+
 ## AI assistance
 
-Codex helped plan the project, scaffold the app, and implement and verify the SQLite schema, sample seed, movie endpoints, prerequisite cycle detection, rewatch ordering, cinema endpoints, booking quote logic, and all three React views.
+I defined the project scope, chose the tech stack, and designed and implemented the core algorithms—including prerequisite cycle detection, rewatch ordering, and minimum-bundle booking. I leveraged Codex as an AI collaborator to help plan milestones, scaffold the project structure, provide code reviews and feedback, and assist with testing and routine implementation. The data model diagram was generated using codex and was reviewed by me 
