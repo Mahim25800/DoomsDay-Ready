@@ -74,7 +74,7 @@ export function BookingView() {
     <main className="page-width app-page">
       <div className="page-heading">
         <h1>Booking</h1>
-        <p>Find seat bundles for your opening-night group.</p>
+        <p>Find seat bundles for the <em>Avengers: Doomsday</em> premiere.</p>
       </div>
       {loadError && (
         <div>
